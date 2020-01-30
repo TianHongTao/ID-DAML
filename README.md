@@ -8,3 +8,4 @@
 
 ## 数据集
 + http://www.grouplens.org/node/73
++ Amazon 5-core(https://nijianmo.github.io/amazon/index.html)
