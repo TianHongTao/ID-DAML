@@ -1,9 +1,12 @@
 #-*-coding:utf-8 -*-
 
-import csv
+import csv2json(path,)
+import copy
 import json
 import os
 import pickle
+import math
+import random
 import re
 import torch
 import torch.nn as nn
@@ -110,6 +113,7 @@ def gen_texts(texts, word_dict, max_len):
 
 def main(path):
     SAVE_DIR    = os.path.sep.join(path.split(os.path.sep)[:-1])
+    print("SAVE_DIR: " + SAVE_DIR)
     para        = pickle.load(open(path.replace('.json', '.para'), 'rb'))
     word_model  = Word2Vec.load(path.replace('.json', '.model'))
     word_model.wv.add("<UNK/>", np.zeros(word_model.vector_size))
@@ -211,7 +215,7 @@ def main(path):
         if best_valid_loss > error:
             best_model_state_dict = copy.deepcopy(model.state_dict())
             best_valid_loss = error
-            best_valid_epoch = e
+            best_valid_epoch = epoch
             torch.save(
                 best_model_state_dict,
                 os.path.join(SAVE_DIR, 'DeepCoNN.tar')
