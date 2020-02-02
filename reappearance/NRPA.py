@@ -292,6 +292,7 @@ def main(path):
                 i_text=i_text.cuda()
                 u_ids=u_ids.cuda()
                 i_ids=i_ids.cuda()
+                rating=rating.cuda()
             pred = model(u_text, i_text, u_ids, i_ids)
             train_loss = loss_func(pred, rating.flatten())
             optimizer.zero_grad()
@@ -314,6 +315,7 @@ def main(path):
                     i_text=i_text.cuda()
                     u_ids=u_ids.cuda()
                     i_ids=i_ids.cuda()
+                    rating=rating.cuda()
                 batch_pred = model(u_text, i_text, u_ids, i_ids)
                 batch_error = batch_pred - rating
                 error.append(batch_error.cpu().numpy())
