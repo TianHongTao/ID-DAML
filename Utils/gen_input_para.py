@@ -34,39 +34,6 @@ def main(path):
             line_cleaned += clean_str(str(sen)).split(' ')
         i_text[int(irid)] = line_cleaned
         max_len_i = max(max_len_i, len(line_cleaned))
-    model = Word2Vec.load(path.replace('.json', '.model'))
-    word_vec = model.wv
-    del model
-    word_vec[PADDING_WORD] = np.zeros((100,), dtype=np.float32)
-    u_miss_num = 0
-    for urid, text in u_text.items():
-        if len(text) < max_len_u:
-            num_padding = max_len_u - len(text)
-            text = text + [PADDING_WORD] * num_padding
-        vec = []
-        for word in text:
-            try:
-                vec.append(word_vec[word])
-            except Exception as e:
-                print(e)
-                u_miss_num += 1
-                vec.append(np.zeros((100,), dtype=np.float32))
-
-    i_miss_num = 0
-    for irid, text in i_text.items():
-        if len(text) < max_len_i:
-            num_padding = max_len_i - len(text)
-            text = text + [PADDING_WORD] * num_padding
-        vec = []
-        for word in text:
-            try:
-                vec.append(word_vec[word])
-            except Exception as e:
-                print(e)
-                i_miss_num += 1
-                vec.append(np.zeros((100,), dtype=np.float32))
-    print("miss_num: ")
-    print(i_miss_num, u_miss_num)
 
     para={}
     para['user_num'] = len(u_text)
