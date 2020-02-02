@@ -22,12 +22,14 @@ def main(path):
     u_text       = []
     i_text       = []
     for urid, review in user_reviews.items():
-        line_cleaned = clean_str(str(review)).split(' ')
-        u_text.append(line_cleaned)
+        for sen in review:
+            line_cleaned = clean_str(sen).split(' ')
+            u_text.append(line_cleaned)
 
     for irid, review in item_reviews.items():
-        line_cleaned = clean_str(str(review)).split(' ')
-        i_text.append(line_cleaned)
+        for sen in review:
+            line_cleaned = clean_str(sen).split(' ')
+            i_text.append(line_cleaned)
 
     with open(path) as f:
         for line in f:

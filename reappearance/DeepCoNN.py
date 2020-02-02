@@ -17,8 +17,8 @@ from gensim.models import Word2Vec
 from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
-BATCH_SIZE          = 128
-EPOCHS              = 100
+BATCH_SIZE          = 30
+EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
 CONV_KERNEL_NUM     = 100
@@ -119,9 +119,9 @@ def main(path):
     word_model.wv.add("<PAD/>", np.zeros(word_model.vector_size))
     word_dict   = {w: i for i, w in enumerate(word_model.wv.index2entity)}
     word_weights = torch.FloatTensor(word_model.wv.vectors)
-    u_text      = gen_texts(para['u_text'], word_dict, para['user_length'])
-    i_text      = gen_texts(para['i_text'], word_dict, para['item_length'])
-    review_length = len(u_text[0])
+    u_text_dict      = gen_texts(para['u_text'], word_dict, para['user_length'])
+    i_text_dict      = gen_texts(para['i_text'], word_dict, para['item_length'])
+    review_length = len(u_text_dict[0])
     word_vec_dim = word_weights.shape[1]
     del para
     del word_model
@@ -133,8 +133,8 @@ def main(path):
         for line in f.readlines():
             line = line.strip()
             line=line.split(',')
-            u_train.append(u_text[int(line[0])])
-            i_train.append(i_text[int(line[1])])
+            u_train.append(int(line[0]))
+            i_train.append(int(line[1]))
             r_train.append(float(line[2]))
     u_train = torch.LongTensor(u_train)
     i_train = torch.LongTensor(i_train)
@@ -147,14 +147,12 @@ def main(path):
         for line in f.readlines():
             line = line.strip()
             line=line.split(',')
-            u_valid.append(u_text[int(line[0])])
-            i_valid.append(i_text[int(line[1])])
+            u_valid.append(int(line[0]))
+            i_valid.append(int(line[1]))
             r_valid.append(float(line[2]))
     u_valid = torch.LongTensor(u_valid)
     i_valid = torch.LongTensor(i_valid)
     r_valid = torch.FloatTensor(r_valid)
-    del u_text
-    del i_text
     
     model = DeepCoNN(
         review_length=review_length,
@@ -196,7 +194,18 @@ def main(path):
 
     for epoch in range(EPOCHS):
         train_loss = None
-        for u_text, i_text, rating in tqdm(train_data_loader):
+        for u_ids, i_ids, rating in tqdm(train_data_loader):
+            u_text = u_ids.tolist()
+            i_text = i_ids.tolist()
+            for i, u_id in enumerate(u_text):
+                u_text[i] = u_text_dict[u_id]
+            for i, i_id in enumerate(i_text):
+                i_text[i] = i_text_dict[i_id]
+            u_text = torch.LongTensor(u_text)
+            i_text = torch.LongTensor(i_text)
+            if torch.cuda.is_available():
+                u_text=u_text.cuda()
+                i_text=i_text.cuda()
             pred = model(u_text, i_text)
             train_loss = loss_func(pred, rating.flatten())
             optimizer.zero_grad()
@@ -204,8 +213,19 @@ def main(path):
             optimizer.step()
 
         error = []
-        for u_text, i_text, rating in tqdm(valid_data_loader):
+        for u_ids, i_ids, rating in tqdm(valid_data_loader):
             with torch.no_grad():
+                u_text = u_ids.tolist()
+                i_text = i_ids.tolist()
+                for i, u_id in enumerate(u_text):
+                    u_text[i] = u_text_dict[u_id]
+                for i, i_id in enumerate(i_text):
+                    i_text[i] = i_text_dict[i_id]
+                u_text = torch.LongTensor(u_text)
+                i_text = torch.LongTensor(i_text)
+                if torch.cuda.is_available():
+                    u_text=u_text.cuda()
+                    i_text=i_text.cuda()
                 batch_pred = model(u_text, i_text)
                 batch_error = batch_pred - rating
                 error.append(batch_error.cpu().numpy())
