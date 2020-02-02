@@ -85,15 +85,17 @@ def save_data(data_test, data_train, path):
 
     for i in data_test.values:
         if user_reviews.get(i[0]):
-            l=1
+            user_reviews[i[0]].append(i[3])
+            user_rid[i[0]].append(i[1])
         else:
-            user_rid[i[0]]=[0]
-            user_reviews[i[0]]=['0']
+            user_rid[i[0]]=[i[1]]
+            user_reviews[i[0]]=[i[3]]
         if item_reviews.get(i[1]):
-            l=1
+            item_reviews[i[1]].append(i[3])
+            item_rid[i[1]].append(i[0])
         else:
-            item_reviews[i[1]] = [0]
-            item_rid[i[1]]=['0']
+            item_reviews[i[1]] = [i[3]]
+            item_rid[i[1]]=[i[0]]
 
     pickle.dump(user_reviews, open(path.replace(".json", 'user_review'), 'wb'))
     pickle.dump(item_reviews, open(path.replace(".json", 'item_review'), 'wb'))
