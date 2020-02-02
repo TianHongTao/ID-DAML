@@ -18,7 +18,7 @@ from gensim.models import Word2Vec
 from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
-BATCH_SIZE          = 30
+BATCH_SIZE          = 12
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
