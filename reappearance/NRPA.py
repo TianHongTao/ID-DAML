@@ -327,7 +327,7 @@ def main(path):
             best_valid_epoch = epoch
             torch.save(
                 best_model_state_dict,
-                os.path.join(SAVE_DIR, 'DeepCoNN.tar')
+                os.path.join(SAVE_DIR, 'NRPA.tar')
             )
         print(
             'epoch: {}, train mse_loss: {:.5f}, valid mse_loss: {:.5f}'

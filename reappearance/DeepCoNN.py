@@ -39,29 +39,29 @@ class DeepCoNN(nn.Module):
 
         super(DeepCoNN, self).__init__()
         self.embedding = nn.Embedding.from_pretrained(word_weights)
-        self.conv_u = nn.Sequential(  # input shape (batch_size, 1, review_length, word_vec_dim)
-            nn.Conv2d(
-                in_channels=1,
-                out_channels=conv_kernel_num,
-                kernel_size=(conv_length, word_vec_dim),
-            ), 
-            # (batch_size, conv_kernel_num, review_length-conv_word_size + 1, 1)
+        self.conv_u = nn.Sequential(  
+            nn.Conv1d( # input shape (batch_size, review_length, word_vec_dim)
+                in_channels = word_vec_dim,
+                out_channels = conv_kernel_num, 
+                kernel_size = conv_length,
+                padding = (conv_length -1) //2
+            ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(review_length-conv_length+1, 1)),
+            nn.MaxPool2d(kernel_size=(1, review_length)),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.Dropout(p=0.5),
             nn.ReLU(),
         )
-        self.conv_i = nn.Sequential(  # input shape (batch_size, 1, review_length, word_vec_dim)
-            nn.Conv2d(
-                in_channels=1,
-                out_channels=conv_kernel_num,
-                kernel_size=(conv_length, word_vec_dim),
-            ), 
-            # (batch_size, conv_kernel_num, review_length-conv_word_size + 1, 1)
+        self.conv_i = nn.Sequential(  
+            nn.Conv1d( # input shape (batch_size, review_length, word_vec_dim)
+                in_channels = word_vec_dim,
+                out_channels = conv_kernel_num, 
+                kernel_size = conv_length,
+                padding = (conv_length -1) //2
+            ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(review_length-conv_length+1, 1)),
+            nn.MaxPool2d(kernel_size=(1, review_length)),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.Dropout(p=0.5),
@@ -70,8 +70,8 @@ class DeepCoNN(nn.Module):
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
 
     def forward(self, user_review, item_review):
-        u_vec = self.embedding(user_review).unsqueeze(1)
-        i_vec = self.embedding(item_review).unsqueeze(1)
+        u_vec = self.embedding(user_review).permute(0, 2, 1)
+        i_vec = self.embedding(item_review).permute(0, 2, 1)
 
         user_latent = self.conv_u(u_vec)
         item_latent = self.conv_i(i_vec)
