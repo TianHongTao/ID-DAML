@@ -182,7 +182,7 @@ def gen_texts(texts, word_dict, max_len):
         if len(text) < max_len:
             num_padding = max_len - len(text)
             text = text + [ "<PAD/>"] * num_padding
-        word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK>"] for w in text]
+        word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK/>"] for w in text]
         texts[t_id] = word_indices
     return texts
 
