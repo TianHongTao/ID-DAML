@@ -13,7 +13,7 @@ DATA_PATH_SPORT     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Sports_and_
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_OFFICE    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Office_Products_5.json"
 PADDING_WORD        = "<PAD/>"
-REVIEW_SIZE         = 15
+REVIEW_SIZE         = 5
 
 def main(path):
     user_reviews = pickle.load(open(path.replace('.json', 'user_review'), 'rb'))
@@ -24,7 +24,7 @@ def main(path):
     i_text       = {}
     for urid, review in user_reviews.items():
         line_cleaned = []
-        for sen in review[:REVIEW_SIZE]:
+        for sen in review[::-1][:REVIEW_SIZE]:
             now = clean_str(str(sen)).split(' ')
             max_len_u = max(max_len_u, len(now))
             line_cleaned.append(now)
@@ -32,7 +32,7 @@ def main(path):
 
     for irid, review in item_reviews.items():
         line_cleaned = []
-        for sen in review[:REVIEW_SIZE]:
+        for sen in review[::-1][:REVIEW_SIZE]:
             now = clean_str(str(sen)).split(' ')
             max_len_i = max(max_len_i, len(now))
             line_cleaned.append(now)
@@ -41,11 +41,12 @@ def main(path):
     para={}
     para['user_num'] = len(u_text)
     para['item_num'] = len(i_text)
-    para['user_length'] = max_len_u
-    para['item_length'] = max_len_i
+    para['user_length'] = max(max_len_u, max_len_i)
+    para['item_length'] = max(max_len_u, max_len_i)
+    para['review_size'] = REVIEW_SIZE
+    print(para)
     para['u_text'] = u_text
     para['i_text'] = i_text
-    para['review_size'] = REVIEW_SIZE
     pickle.dump(para, open(path.replace('.json', '.para'), 'wb'))
     print("OVER")
 

@@ -150,7 +150,7 @@ class NRPA(nn.Module):
         d_matrix_user   = self.user_reveiw_net(u_text, mul_u_ids)
         d_matrix_user   = d_matrix_user.reshape(batch_size, self.review_size, -1).permute(0,2,1)
 
-        i_text          = u_text.reshape(new_batch, -1)
+        i_text          = i_text.reshape(new_batch, -1)
         mul_i_ids       = i_ids.unsqueeze(1)
         mul_i_ids       = torch.cat((mul_i_ids,) * self.review_size,dim=1).reshape(-1)
         d_matrix_item   = self.item_review_net(i_text, mul_i_ids)
