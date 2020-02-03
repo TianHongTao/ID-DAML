@@ -49,10 +49,10 @@ class DeepCoNN(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_length)),
+            nn.Dropout(p=1.0),
         )
         self.linear_u = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
-            nn.Dropout(p=1.0),
             nn.ReLU(),
         )
         self.conv_i = nn.Sequential(  
@@ -64,10 +64,10 @@ class DeepCoNN(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_length)),
+            nn.Dropout(p=1.0),
         )
         self.linear_i = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
-            nn.Dropout(p=1.0),
             nn.ReLU(),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
