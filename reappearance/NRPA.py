@@ -28,7 +28,7 @@ LATENT_FACTOR_NUM   = 100
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
 ATTEN_VEC_DIM       = 80
-REVIEW_SIZE         = 1
+REVIEW_SIZE         = 15
 
 class ReviewEncoder(nn.Module):
     def __init__(self, word_vec_dim, conv_length, conv_kernel_num, word_weights,

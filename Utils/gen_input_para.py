@@ -23,14 +23,14 @@ def main(path):
     i_text       = {}
     for urid, review in user_reviews.items():
         line_cleaned = []
-        for sen in review:
+        for sen in review[:15]:
             line_cleaned += clean_str(str(sen)).split(' ')
         u_text[int(urid)] = line_cleaned
         max_len_u = max(max_len_u, len(line_cleaned))
 
     for irid, review in item_reviews.items():
         line_cleaned = []
-        for sen in review:
+        for sen in review[:15]:
             line_cleaned += clean_str(str(sen)).split(' ')
         i_text[int(irid)] = line_cleaned
         max_len_i = max(max_len_i, len(line_cleaned))
