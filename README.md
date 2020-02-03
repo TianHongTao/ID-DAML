@@ -3,6 +3,9 @@
 ## 书籍阅读复现阶段
 
 ## 论文阅读复现阶段
++ DeepCoNN https://arxiv.org/abs/1701.04783
++ NRPA https://arxiv.org/abs/1905.12480v1
++ DAML https://dl.acm.org/doi/10.1145/3292500.3330906
 
 ## 自己的论文
 
