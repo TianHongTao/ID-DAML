@@ -23,7 +23,7 @@ EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
 CONV_KERNEL_NUM     = 32
-FM_K                = 5 #Factorization Machine 交叉向量维度
+FM_K                = 1 #Factorization Machine 交叉向量维度
 LATENT_FACTOR_NUM   = 64
 GPU_DEVICES         = 0
 
@@ -52,7 +52,7 @@ class DeepCoNN(nn.Module):
         )
         self.linear_u = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=1.0),
             nn.ReLU(),
         )
         self.conv_i = nn.Sequential(  
@@ -67,7 +67,7 @@ class DeepCoNN(nn.Module):
         )
         self.linear_i = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=1.0),
             nn.ReLU(),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
@@ -89,6 +89,7 @@ class DeepCoNN(nn.Module):
         
         concat_latent = torch.cat((user_latent, item_latent), dim=1)
         prediction = self.out(concat_latent)
+        print(prediction)
         return prediction
 
 

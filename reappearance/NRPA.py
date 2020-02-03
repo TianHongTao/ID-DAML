@@ -24,7 +24,7 @@ EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
 CONV_KERNEL_NUM     = 32
-FM_K                = 5 #Factorization Machine 交叉向量维度
+FM_K                = 1 #Factorization Machine 交叉向量维度
 LATENT_FACTOR_NUM   = 64
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
@@ -50,6 +50,7 @@ class ReviewEncoder(nn.Module):
             kernel_size = conv_length,
             padding = (conv_length -1) //2
         )# output shape (batch_size, conv_kernel_num, review_length)
+        # self.drop = nn.Dropout(p=1.0)
         self.l1 = nn.Linear(id_embedding_dim, atten_vec_dim)
         self.A1 = nn.Parameter(torch.randn(atten_vec_dim, conv_kernel_num), requires_grad=True)
 
@@ -64,6 +65,7 @@ class ReviewEncoder(nn.Module):
         g               = torch.bmm(g, c) #(batch_size, 1, review_length)
         alph            = F.softmax(g, dim=2) #(batch_size, 1, review_length)
         d               = torch.bmm(c, alph.permute(0, 2, 1)) #(batch_size, conv_kernel_num, 1)
+        # d               = self.drop(d)
         return d
 
 
@@ -77,6 +79,7 @@ class UIEncoder(nn.Module):
         super(UIEncoder, self).__init__()
         self.embedding_id = nn.Embedding(id_matrix_len, id_embedding_dim)
         self.review_f = conv_kernel_num
+        self.drop = nn.Dropout(p=1.0)
         self.l1 = nn.Linear(id_embedding_dim, atten_vec_dim)
         self.A1 = nn.Parameter(torch.randn(atten_vec_dim, conv_kernel_num), requires_grad=True)
 
@@ -89,6 +92,7 @@ class UIEncoder(nn.Module):
         e               = torch.bmm(e, word_Att) #(batch_size, 1, review_size)
         beta            = F.softmax(e, dim=2) #(batch_size, 1, review_size)
         q               = torch.bmm(word_Att, beta.permute(0, 2, 1)) #(batch_size, conv_kernel_num, 1)
+        q              = self.drop(q)
         return q
 
 
@@ -162,6 +166,7 @@ class NRPA(nn.Module):
 
         x = torch.cat((pu, qi), dim=1)
         rate = self.fm(x)
+        print(rate)
         return rate
 
 
