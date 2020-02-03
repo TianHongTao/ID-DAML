@@ -54,6 +54,7 @@ class DeepCoNN(nn.Module):
         self.linear_u = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
             nn.ReLU(),
+            nn.Dropout(p=1.0),
         )
         self.conv_i = nn.Sequential(  
             nn.Conv1d( # input shape (batch_size, review_length, word_vec_dim)
@@ -69,6 +70,7 @@ class DeepCoNN(nn.Module):
         self.linear_i = nn.Sequential(
             nn.Linear(conv_kernel_num*review_size, latent_factor_num),
             nn.ReLU(),
+            nn.Dropout(p=1.0),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
 

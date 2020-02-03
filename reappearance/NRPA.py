@@ -50,7 +50,7 @@ class ReviewEncoder(nn.Module):
             kernel_size = conv_length,
             padding = (conv_length -1) //2
         )# output shape (batch_size, conv_kernel_num, review_length)
-        # self.drop = nn.Dropout(p=1.0)
+        self.drop = nn.Dropout(p=1.0)
         self.l1 = nn.Linear(id_embedding_dim, atten_vec_dim)
         self.A1 = nn.Parameter(torch.randn(atten_vec_dim, conv_kernel_num), requires_grad=True)
 
@@ -59,13 +59,13 @@ class ReviewEncoder(nn.Module):
         review_vec      = self.embedding_review(review) #(batch_size, review_length, word_vec_dim)
         review_vec      = review_vec.permute(0, 2, 1)
         c               = F.relu(self.conv(review_vec)) #(batch_size, conv_kernel_num, review_length)
+        c               = self.drop(c)
         id_vec          = self.embedding_id(ids) #(batch_size, id_embedding_dim)
         qw              = F.relu(self.l1(id_vec)) #(batch_size, atten_vec_dim)
         g               = torch.mm(qw, self.A1).unsqueeze(1) #(batch_size, 1, conv_kernel_num)
         g               = torch.bmm(g, c) #(batch_size, 1, review_length)
         alph            = F.softmax(g, dim=2) #(batch_size, 1, review_length)
         d               = torch.bmm(c, alph.permute(0, 2, 1)) #(batch_size, conv_kernel_num, 1)
-        # d               = self.drop(d)
         return d
 
 
@@ -79,7 +79,6 @@ class UIEncoder(nn.Module):
         super(UIEncoder, self).__init__()
         self.embedding_id = nn.Embedding(id_matrix_len, id_embedding_dim)
         self.review_f = conv_kernel_num
-        self.drop = nn.Dropout(p=1.0)
         self.l1 = nn.Linear(id_embedding_dim, atten_vec_dim)
         self.A1 = nn.Parameter(torch.randn(atten_vec_dim, conv_kernel_num), requires_grad=True)
 
@@ -92,7 +91,6 @@ class UIEncoder(nn.Module):
         e               = torch.bmm(e, word_Att) #(batch_size, 1, review_size)
         beta            = F.softmax(e, dim=2) #(batch_size, 1, review_size)
         q               = torch.bmm(word_Att, beta.permute(0, 2, 1)) #(batch_size, conv_kernel_num, 1)
-        q              = self.drop(q)
         return q
 
 
@@ -166,7 +164,6 @@ class NRPA(nn.Module):
 
         x = torch.cat((pu, qi), dim=1)
         rate = self.fm(x)
-        print(rate)
         return rate
 
 

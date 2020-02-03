@@ -98,15 +98,12 @@ class MutualAttention(nn.Module):
         return u_att, i_att
 
     def get_distance(self, conv_fea_u, conv_fea_i):
-        return torch.sqrt(
-            torch.sum(
-                torch.pow(
-                    conv_fea_u - conv_fea_i, 
-                    2
-                ),
-                dim=1
-            )
-        )
+        conv_sub = torch.sub(conv_fea_u, conv_fea_i)
+        conv_pow = torch.power(conv_sub, 2)
+        del conv_sub
+        conv_sum = torch.sum(conv_pow, dim=1)
+        del conv_pow
+        return torch.sqrt(conv_sum)
 
 
 class Flatten(nn.Module):
