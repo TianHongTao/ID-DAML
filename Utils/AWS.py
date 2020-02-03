@@ -9,6 +9,7 @@ import pandas as pd
 DATA_PATH_SPORT     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Sports_and_Outdoors_5.json"
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_OFFICE    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Office_Products_5.json"
+DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 
 def main(path):
     jsonfile = path.replace('.csv','.json')
@@ -138,6 +139,7 @@ def numerize(data):
     return data
 
 if __name__ == "__main__":
-    main(DATA_PATH_SPORT)
-    main(DATA_PATH_MUSIC)
-    main(DATA_PATH_OFFICE)
+    # main(DATA_PATH_SPORT)
+    # main(DATA_PATH_MUSIC)
+    # main(DATA_PATH_OFFICE)
+    main(DATA_PATH_MUSIC2)

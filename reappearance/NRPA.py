@@ -18,13 +18,14 @@ from gensim.models import Word2Vec
 from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
+DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 BATCH_SIZE          = 12
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
-CONV_KERNEL_NUM     = 100
+CONV_KERNEL_NUM     = 32
 FM_K                = 5 #Factorization Machine 交叉向量维度
-LATENT_FACTOR_NUM   = 100
+LATENT_FACTOR_NUM   = 64
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
 ATTEN_VEC_DIM       = 80
@@ -349,5 +350,6 @@ def main(path):
 
 
 if __name__ == "__main__":
-    path = DATA_PATH_MUSIC
+    # path = DATA_PATH_MUSIC
+    path = DATA_PATH_MUSIC2
     main(path)

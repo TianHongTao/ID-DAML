@@ -12,19 +12,24 @@ from gensim.models import Word2Vec
 DATA_PATH_SPORT     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Sports_and_Outdoors_5.json"
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_OFFICE    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Office_Products_5.json"
+DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 PADDING_WORD        = "<PAD/>"
-REVIEW_SIZE         = 5
+REVIEW_SIZE         = 50
 
 def main(path):
     user_reviews = pickle.load(open(path.replace('.json', 'user_review'), 'rb'))
     item_reviews = pickle.load(open(path.replace('.json', 'item_review'), 'rb'))
     max_len_u    = 0
     max_len_i    = 0
+    max_review   = 0
+    min_review   = 0
     u_text       = {}
     i_text       = {}
     for urid, review in user_reviews.items():
         line_cleaned = []
-        for sen in review[::-1][:REVIEW_SIZE]:
+        for sen in review[:REVIEW_SIZE]:
+            max_review = max(max_review, len(review))
+            min_review = min(min_review, len(review))
             now = clean_str(str(sen)).split(' ')
             max_len_u = max(max_len_u, len(now))
             line_cleaned.append(now)
@@ -32,7 +37,9 @@ def main(path):
 
     for irid, review in item_reviews.items():
         line_cleaned = []
-        for sen in review[::-1][:REVIEW_SIZE]:
+        for sen in review[:REVIEW_SIZE]:
+            max_review = max(max_review, len(review))
+            min_review = min(min_review, len(review))
             now = clean_str(str(sen)).split(' ')
             max_len_i = max(max_len_i, len(now))
             line_cleaned.append(now)
@@ -44,7 +51,7 @@ def main(path):
     para['user_length'] = max(max_len_u, max_len_i)
     para['item_length'] = max(max_len_u, max_len_i)
     para['review_size'] = REVIEW_SIZE
-    print(para)
+    print(para, max_review, min_review)
     para['u_text'] = u_text
     para['i_text'] = i_text
     pickle.dump(para, open(path.replace('.json', '.para'), 'wb'))
@@ -67,4 +74,5 @@ def clean_str(string):
     return string.strip().lower()
 
 if __name__ == "__main__":
-    main(DATA_PATH_MUSIC)
+    # main(DATA_PATH_MUSIC)
+    main(DATA_PATH_MUSIC2)
