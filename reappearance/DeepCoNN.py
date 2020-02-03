@@ -21,9 +21,9 @@ BATCH_SIZE          = 12
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
-CONV_KERNEL_NUM     = 20
+CONV_KERNEL_NUM     = 32
 FM_K                = 5 #Factorization Machine 交叉向量维度
-LATENT_FACTOR_NUM   = 100
+LATENT_FACTOR_NUM   = 64
 GPU_DEVICES         = 0
 
 
