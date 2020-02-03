@@ -21,14 +21,14 @@ BATCH_SIZE          = 12
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
-CONV_KERNEL_NUM     = 100
+CONV_KERNEL_NUM     = 20
 FM_K                = 5 #Factorization Machine 交叉向量维度
 LATENT_FACTOR_NUM   = 100
 GPU_DEVICES         = 0
 
 
 class DeepCoNN(nn.Module):
-    def __init__(self, review_length, word_vec_dim, fm_k, conv_length,
+    def __init__(self, review_size, review_length, word_vec_dim, fm_k, conv_length,
                  conv_kernel_num, latent_factor_num, word_weights):
 
         # :param review_length: 评论单词数
@@ -48,8 +48,9 @@ class DeepCoNN(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_length)),
-            Flatten(),
-            nn.Linear(conv_kernel_num, latent_factor_num),
+        )
+        self.linear_u = nn.Sequential(
+            nn.Linear(conv_kernel_num*review_size, latent_factor_num),
             nn.Dropout(p=0.5),
             nn.ReLU(),
         )
@@ -62,19 +63,28 @@ class DeepCoNN(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_length)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_length)),
-            Flatten(),
-            nn.Linear(conv_kernel_num, latent_factor_num),
+        )
+        self.linear_i = nn.Sequential(
+            nn.Linear(conv_kernel_num*review_size, latent_factor_num),
             nn.Dropout(p=0.5),
             nn.ReLU(),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
 
     def forward(self, user_review, item_review):
+        batch_size = user_review.shape[0]
+        new_batch_size = user_review.shape[0] * user_review.shape[1]
+
+        user_review = user_review.reshape(new_batch_size, -1)
+        item_review = user_review.reshape(new_batch_size, -1)
         u_vec = self.embedding(user_review).permute(0, 2, 1)
         i_vec = self.embedding(item_review).permute(0, 2, 1)
 
-        user_latent = self.conv_u(u_vec)
-        item_latent = self.conv_i(i_vec)
+        user_latent = self.conv_u(u_vec).reshape(batch_size, -1)
+        item_latent = self.conv_i(i_vec).reshape(batch_size, -1)
+
+        user_latent = self.linear_u(user_latent)
+        item_latent = self.linear_i(item_latent)
         
         concat_latent = torch.cat((user_latent, item_latent), dim=1)
         prediction = self.out(concat_latent)
@@ -99,13 +109,19 @@ class Flatten(nn.Module):
         return x.squeeze()
 
 
-def gen_texts(texts, word_dict, max_len):
+def gen_texts(texts, word_dict, max_len, review_size):
     for t_id, text in texts.items():
-        if len(text) < max_len:
-            num_padding = max_len - len(text)
-            text = text + [ "<PAD/>"] * num_padding
-        word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK/>"] for w in text]
-        texts[t_id] = word_indices
+        sen_indices = []
+        for sen in text:
+            if len(sen) < max_len:
+                num_padding = max_len - len(sen)
+                sen += [ "<PAD/>"] * num_padding
+            word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK/>"] for w in sen]
+            sen_indices.append(word_indices)
+        if(review_size > len(sen_indices)):
+            num_padding = review_size - len(sen_indices)
+            sen_indices += [[ word_dict["<PAD/>"]] * max_len] * num_padding
+        texts[t_id] = sen_indices
     return texts
 
 
@@ -119,9 +135,10 @@ def main(path):
     word_model.wv.add("<PAD/>", np.zeros(word_model.vector_size))
     word_dict   = {w: i for i, w in enumerate(word_model.wv.index2entity)}
     word_weights = torch.FloatTensor(word_model.wv.vectors)
-    u_text_dict      = gen_texts(para['u_text'], word_dict, para['user_length'])
-    i_text_dict      = gen_texts(para['i_text'], word_dict, para['item_length'])
-    review_length = len(u_text_dict[0])
+    u_text_dict      = gen_texts(para['u_text'], word_dict, para['user_length'], para['review_size'])
+    i_text_dict      = gen_texts(para['i_text'], word_dict, para['item_length'], para['review_size'])
+    review_size      = para['review_size']
+    review_length    = para['user_length']
     word_vec_dim = word_weights.shape[1]
     del para
     del word_model
@@ -155,6 +172,7 @@ def main(path):
     r_valid = torch.FloatTensor(r_valid)
     
     model = DeepCoNN(
+        review_size=review_size,
         review_length=review_length,
         word_vec_dim=word_vec_dim,
         fm_k=FM_K,
@@ -206,6 +224,7 @@ def main(path):
             if torch.cuda.is_available():
                 u_text=u_text.cuda()
                 i_text=i_text.cuda()
+                rating=rating.cuda()
             pred = model(u_text, i_text)
             train_loss = loss_func(pred, rating.flatten())
             optimizer.zero_grad()
@@ -226,6 +245,7 @@ def main(path):
                 if torch.cuda.is_available():
                     u_text=u_text.cuda()
                     i_text=i_text.cuda()
+                    rating=rating.cuda()
                 batch_pred = model(u_text, i_text)
                 batch_error = batch_pred - rating
                 error.append(batch_error.cpu().numpy())

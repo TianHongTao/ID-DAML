@@ -148,13 +148,13 @@ class NRPA(nn.Module):
         mul_u_ids       = u_ids.unsqueeze(1)
         mul_u_ids       = torch.cat((mul_u_ids,) * self.review_size,dim=1).reshape(-1)
         d_matrix_user   = self.user_reveiw_net(u_text, mul_u_ids)
-        d_matrix_user   = d_matrix_user.view(batch_size, self.review_size, -1).permute(0,2,1)
+        d_matrix_user   = d_matrix_user.reshape(batch_size, self.review_size, -1).permute(0,2,1)
 
         i_text          = u_text.reshape(new_batch, -1)
         mul_i_ids       = i_ids.unsqueeze(1)
         mul_i_ids       = torch.cat((mul_i_ids,) * self.review_size,dim=1).reshape(-1)
         d_matrix_item   = self.item_review_net(i_text, mul_i_ids)
-        d_matrix_item   = d_matrix_item.view(batch_size, self.review_size, -1).permute(0,2,1)
+        d_matrix_item   = d_matrix_item.reshape(batch_size, self.review_size, -1).permute(0,2,1)
 
         pu = self.user_net(d_matrix_user, u_ids).squeeze(2)
         qi = self.item_net(d_matrix_item, i_ids).squeeze(2)
@@ -177,13 +177,19 @@ class Co_Dataset(Dataset):
         return len(self.ratings)
 
 
-def gen_texts(texts, word_dict, max_len):
+def gen_texts(texts, word_dict, max_len, review_size):
     for t_id, text in texts.items():
-        if len(text) < max_len:
-            num_padding = max_len - len(text)
-            text = text + [ "<PAD/>"] * num_padding
-        word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK/>"] for w in text]
-        texts[t_id] = word_indices
+        sen_indices = []
+        for sen in text:
+            if len(sen) < max_len:
+                num_padding = max_len - len(sen)
+                sen += [ "<PAD/>"] * num_padding
+            word_indices = [word_dict[w] if w in word_dict else word_dict["<UNK/>"] for w in sen]
+            sen_indices.append(word_indices)
+        if(review_size > len(sen_indices)):
+            num_padding = review_size - len(sen_indices)
+            sen_indices += [[ word_dict["<PAD/>"]] * max_len] * num_padding
+        texts[t_id] = sen_indices
     return texts
 
 
@@ -192,14 +198,15 @@ def main(path):
     print("SAVE_DIR: " + SAVE_DIR)
 
     para        = pickle.load(open(path.replace('.json', '.para'), 'rb'))
+    review_size = para['review_size']
     word_model  = Word2Vec.load(path.replace('.json', '.model'))
     word_model.wv.add("<UNK/>", np.zeros(word_model.vector_size))
     word_model.wv.add("<PAD/>", np.zeros(word_model.vector_size))
     word_dict       = {w: i for i, w in enumerate(word_model.wv.index2entity)}
     word_weights    = torch.FloatTensor(word_model.wv.vectors)
-    u_text_dict     = gen_texts(para['u_text'], word_dict, para['user_length'])
-    i_text_dict     = gen_texts(para['i_text'], word_dict, para['item_length'])
-    review_length   = len(u_text_dict[0])
+    u_text_dict     = gen_texts(para['u_text'], word_dict, para['user_length'], review_size)
+    i_text_dict     = gen_texts(para['i_text'], word_dict, para['item_length'], review_size)
+    review_length   = para['user_length']
     word_vec_dim    = word_weights.shape[1]
     user_num        = para['user_num']
     item_num        = para['item_num']
@@ -235,7 +242,7 @@ def main(path):
     r_valid = torch.FloatTensor(r_valid)
     
     model = NRPA(
-        review_size=REVIEW_SIZE, 
+        review_size=review_size, 
         word_vec_dim=word_vec_dim, 
         fm_k=FM_K, 
         conv_length=CONV_LENGTH,
