@@ -19,8 +19,8 @@ from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
-BATCH_SIZE          = 12
-EPOCHS              = 40
+BATCH_SIZE          = 64
+EPOCHS              = 50
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
 CONV_KERNEL_NUM     = 32
@@ -331,7 +331,7 @@ def main(path):
                 error.append(batch_error.cpu().numpy())
         error = np.concatenate(error, axis=None)**2
         error = error.mean().item()
-        if best_valid_loss > error:
+        if best_valid_loss > error and epoch > 1:
             best_model_state_dict = copy.deepcopy(model.state_dict())
             best_valid_loss = error
             best_valid_epoch = epoch

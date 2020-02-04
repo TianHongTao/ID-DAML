@@ -19,7 +19,7 @@ from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
-BATCH_SIZE          = 12
+BATCH_SIZE          = 32
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
@@ -88,27 +88,27 @@ class MutualAttention(nn.Module):
     def forward(self, local_att_u, local_att_i):
 
         # Originl Attentiion func, the mem has been alloced so large
-        conv_fea_u = self.conv_u(local_att_u.permute(0,2,1)).unsqueeze(2)
-        conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).unsqueeze(3)
-        # (batch_size,  conv_kernel_num, 1, review_length)
-        # (batch_size,  conv_kernel_num, review_length, 1)
-        distance    = self.get_distance(conv_fea_u, conv_fea_i)
-        A           = torch.reciprocal(distance+1)
-        i_att       = torch.sum(A,dim=1)
-        u_att       = torch.sum(A,dim=2)
+        # conv_fea_u = self.conv_u(local_att_u.permute(0,2,1)).unsqueeze(2)
+        # conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).unsqueeze(3)
+        # # (batch_size,  conv_kernel_num, 1, review_length)
+        # # (batch_size,  conv_kernel_num, review_length, 1)
+        # distance    = self.get_distance(conv_fea_u, conv_fea_i)
+        # A           = torch.reciprocal(distance+1)
+        # i_att       = F.softmax(torch.sum(A,dim=2), dim=1)
+        # u_att       = F.softmax(torch.sum(A,dim=1), dim=1)
 
         # My Attention Function  Accord to the paper <ATTENTION IS ALL YOUR NEED>, it will save the mem.
 
-        # conv_fea_u = self.conv_u(local_att_u.permute(0,2,1))
-        # conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).permute(0,2,1)
-        # # (batch_size,  conv_kernel_num, review_length)
-        # # (batch_size,  review_length, conv_kernel_num)
+        conv_fea_u = self.conv_u(local_att_u.permute(0,2,1))
+        conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).permute(0,2,1)
+        # (batch_size,  conv_kernel_num, review_length)
+        # (batch_size,  review_length, conv_kernel_num)
 
-        # A = torch.bmm(conv_fea_i, conv_fea_u)
-        # # (batch_size,  i_review_length, u_review_length) 
-        # # i_review_length == u_review_length in this Module
-        # i_att      = F.softmax(torch.sum(A, dim=1), dim=1)
-        # u_att      = F.softmax(torch.sum(A, dim=2), dim=1)
+        A = torch.bmm(conv_fea_i, conv_fea_u)
+        # (batch_size,  i_review_length, u_review_length) 
+        # i_review_length == u_review_length in this Module
+        i_att      = F.softmax(torch.sum(A, dim=2), dim=1)
+        u_att      = F.softmax(torch.sum(A, dim=1), dim=1)
         
         # (batch_size, review_length)
         return u_att, i_att
@@ -149,7 +149,6 @@ class DAML(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_size)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_size)),
-            nn.Dropout(p=1.0),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.ReLU(),
@@ -163,12 +162,13 @@ class DAML(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_size)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_size)),
-            nn.Dropout(p=1.0),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.ReLU(),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
+        self.drop_u = nn.Dropout(p=1.0)
+        self.drop_i = nn.Dropout(p=1.0)
 
     def forward(self, u_text, i_text, u_ids, i_ids):
         # (batch_size , review_size, review_length)
@@ -210,12 +210,13 @@ class DAML(nn.Module):
         user_latent += u_ids
         item_latent += i_ids
 
-        concat_latent = torch.cat((user_latent, item_latent), dim=1)
+        concat_latent = torch.cat((self.drop_u(user_latent), self.drop_u(item_latent)), dim=1)
         prediction = self.out(concat_latent)
         return prediction
     
     def pool_mean(self, pool_u, pool_i):
-        return torch.mean(pool_u, dim=1), torch.mean(pool_u,dim=1)
+        return torch.mean(pool_u, dim=1) + torch.mean(pool_i, dim=1)
+        # return torch.max(pool_u, dim=1)[0], torch.max(pool_u,dim=1)[0]
 
 
 class Co_Dataset(Dataset):
@@ -384,7 +385,7 @@ def main(path):
                 error.append(batch_error.cpu().numpy())
         error = np.concatenate(error, axis=None)**2
         error = error.mean().item()
-        if best_valid_loss > error:
+        if best_valid_loss > error and epoch > 1:
             best_model_state_dict = copy.deepcopy(model.state_dict())
             best_valid_loss = error
             best_valid_epoch = epoch
