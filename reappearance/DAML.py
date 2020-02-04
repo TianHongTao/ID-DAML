@@ -19,7 +19,7 @@ from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
-BATCH_SIZE          = 12
+BATCH_SIZE          = 32
 EPOCHS              = 40
 LEARNING_RATE       = 0.02
 CONV_LENGTH         = 3
@@ -149,7 +149,6 @@ class DAML(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_size)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_size)),
-            nn.Dropout(p=1.0),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.ReLU(),
@@ -163,12 +162,13 @@ class DAML(nn.Module):
             ),# output shape (batch_size, conv_kernel_num, review_size)
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(1, review_size)),
-            nn.Dropout(p=1.0),
             Flatten(),
             nn.Linear(conv_kernel_num, latent_factor_num),
             nn.ReLU(),
         )
         self.out = FactorizationMachine(latent_factor_num * 2, fm_k)
+        self.drop_u = nn.Dropout(p=1.0)
+        self.drop_i = nn.Dropout(p=1.0)
 
     def forward(self, u_text, i_text, u_ids, i_ids):
         # (batch_size , review_size, review_length)
@@ -210,7 +210,7 @@ class DAML(nn.Module):
         user_latent += u_ids
         item_latent += i_ids
 
-        concat_latent = torch.cat((user_latent, item_latent), dim=1)
+        concat_latent = torch.cat((self.drop_u(user_latent), self.drop_u(item_latent)), dim=1)
         prediction = self.out(concat_latent)
         return prediction
     
