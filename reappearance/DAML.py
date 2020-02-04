@@ -215,7 +215,7 @@ class DAML(nn.Module):
         return prediction
     
     def pool_mean(self, pool_u, pool_i):
-        return torch.mean(pool_u, dim=1) + torch.mean(pool_i, dim=1)
+        return torch.mean(pool_u, dim=1) , torch.mean(pool_i, dim=1)
         # return torch.max(pool_u, dim=1)[0], torch.max(pool_u,dim=1)[0]
 
 
