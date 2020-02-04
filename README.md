@@ -13,6 +13,12 @@
 ## 数据集
 + http://www.grouplens.org/node/73
 + Amazon 5-core(https://nijianmo.github.io/amazon/index.html)
+  
+## 训练结果展示
+test文件夹中的json文件
+
+命名格式:
+>> train_{model_name}_{dataset_name}_{reviews_length}_{reviews_size}_{user_num}_{item_num}
 
 ## 环境
 + python3
