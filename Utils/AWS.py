@@ -20,20 +20,24 @@ def main(path):
     items_id=[]
     ratings=[]
     reviews=[]
+    reviews_len=[]
     np.random.seed(2019)
     with open(jsonfile) as f:
         for line in f:
             line = line.strip()
             info = json.loads(line)
+            if len(info['reviewText']) > 800:
+                continue
             users_id.append(info['reviewerID'])
             items_id.append(info['asin'])
             ratings.append(info['overall'])
             reviews.append(info['reviewText'])
+            reviews_len.append(len(info['reviewText']))
     data = pd.DataFrame({'user_id':pd.Series(users_id),
                    'item_id':pd.Series(items_id),
                    'ratings':pd.Series(ratings),
-                   'reviews':pd.Series(reviews)})[['user_id','item_id','ratings','reviews']]
-    # print(data)
+                   'reviews':pd.Series(reviews),
+                   'len':pd.Series(reviews_len)})[['user_id','item_id','ratings','reviews', "len"]]
     data_test, data_train = save_rating(data, path)
     save_data(data_test, data_train, path)
     print("DATASETS " + path + " OVER")

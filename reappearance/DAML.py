@@ -86,6 +86,8 @@ class MutualAttention(nn.Module):
         self.bias = 0.1
 
     def forward(self, local_att_u, local_att_i):
+
+        # Originl Attentiion func, the mem has been alloced so large
         conv_fea_u = self.conv_u(local_att_u.permute(0,2,1)).unsqueeze(2)
         conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).unsqueeze(3)
         # (batch_size,  conv_kernel_num, 1, review_length)
@@ -94,12 +96,26 @@ class MutualAttention(nn.Module):
         A           = torch.reciprocal(distance+1)
         i_att       = torch.sum(A,dim=1)
         u_att       = torch.sum(A,dim=2)
+
+        # My Attention Function  Accord to the paper <ATTENTION IS ALL YOUR NEED>, it will save the mem.
+
+        # conv_fea_u = self.conv_u(local_att_u.permute(0,2,1))
+        # conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).permute(0,2,1)
+        # # (batch_size,  conv_kernel_num, review_length)
+        # # (batch_size,  review_length, conv_kernel_num)
+
+        # A = torch.bmm(conv_fea_i, conv_fea_u)
+        # # (batch_size,  i_review_length, u_review_length) 
+        # # i_review_length == u_review_length in this Module
+        # i_att      = F.softmax(torch.sum(A, dim=1), dim=1)
+        # u_att      = F.softmax(torch.sum(A, dim=2), dim=1)
+        
         # (batch_size, review_length)
         return u_att, i_att
 
     def get_distance(self, conv_fea_u, conv_fea_i):
         conv_sub = torch.sub(conv_fea_u, conv_fea_i)
-        conv_pow = torch.power(conv_sub, 2)
+        conv_pow = torch.pow(conv_sub, 2)
         del conv_sub
         conv_sum = torch.sum(conv_pow, dim=1)
         del conv_pow
@@ -381,7 +397,7 @@ def main(path):
             .format(epoch, train_loss, error)
         )
     
-    with open(os.path.join(SAVE_DIR,'training.json'), 'w') as f:
+    with open(os.path.join(SAVE_DIR,'training_DAML.json'), 'w') as f:
         json.dump(
             {'epoch': best_valid_epoch,'valid_loss': best_valid_loss},
             f

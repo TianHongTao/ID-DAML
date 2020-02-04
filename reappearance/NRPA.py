@@ -344,7 +344,7 @@ def main(path):
             .format(epoch, train_loss, error)
         )
     
-    with open(os.path.join(SAVE_DIR,'training.json'), 'w') as f:
+    with open(os.path.join(SAVE_DIR,'training_NRPA.json'), 'w') as f:
         json.dump(
             {'epoch': best_valid_epoch,'valid_loss': best_valid_loss},
             f
