@@ -18,7 +18,7 @@
 test文件夹中的json文件
 
 命名格式:
->> train_{model_name}_{dataset_name}_{reviews_length}_{reviews_size}_{user_num}_{item_num}
+>> train\_{model_name}\_{dataset_name}\_{reviews_length}\_{reviews_size}\_{user_num}\_{item_num}
 
 ## 环境
 + python3
