@@ -331,7 +331,7 @@ def main(path):
                 error.append(batch_error.cpu().numpy())
         error = np.concatenate(error, axis=None)**2
         error = error.mean().item()
-        if best_valid_loss > error and epoch > 1:
+        if best_valid_loss > error:
             best_model_state_dict = copy.deepcopy(model.state_dict())
             best_valid_loss = error
             best_valid_epoch = epoch
