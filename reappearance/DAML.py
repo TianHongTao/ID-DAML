@@ -19,18 +19,18 @@ from torch.utils.data.dataset import Dataset
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
-BATCH_SIZE          = 32
-EPOCHS              = 40
-LEARNING_RATE       = 0.02
+BATCH_SIZE          = 24
+EPOCHS              = 50
+LEARNING_RATE       = 0.001
 CONV_LENGTH         = 3
-CONV_KERNEL_NUM     = 32
+CONV_KERNEL_NUM     = 16
 FM_K                = 1 #Factorization Machine 交叉向量维度
-LATENT_FACTOR_NUM   = 64
+LATENT_FACTOR_NUM   = 32
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
-ATTEN_VEC_DIM       = 80
+ATTEN_VEC_DIM       = 16
 REVIEW_SIZE         = 15
-ATT_CONV_SIZE       = 5
+ATT_CONV_SIZE       = 3
 
 class LocalAttention(nn.Module):
     # As the paper in DAML the attention feature is the conv feature

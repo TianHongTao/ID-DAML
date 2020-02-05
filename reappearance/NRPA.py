@@ -21,14 +21,14 @@ DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Mus
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 BATCH_SIZE          = 64
 EPOCHS              = 50
-LEARNING_RATE       = 0.02
+LEARNING_RATE       = 0.01
 CONV_LENGTH         = 3
 CONV_KERNEL_NUM     = 32
 FM_K                = 1 #Factorization Machine 交叉向量维度
-LATENT_FACTOR_NUM   = 64
+LATENT_FACTOR_NUM   = 32
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
-ATTEN_VEC_DIM       = 80
+ATTEN_VEC_DIM       = 16
 REVIEW_SIZE         = 15
 
 class ReviewEncoder(nn.Module):
