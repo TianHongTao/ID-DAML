@@ -11,8 +11,9 @@
 ## 自己的论文
 
 ## 数据集
-+ http://www.grouplens.org/node/73
++ MOVIE LINES (http://www.grouplens.org/node/73)
 + Amazon 5-core(https://nijianmo.github.io/amazon/index.html)
++ YELP (https://www.yelp.com/dataset/download)
 
 ## 参数(reviews_Sports_and_Outdoors_5 Best)
 
