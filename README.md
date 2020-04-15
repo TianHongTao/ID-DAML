@@ -9,6 +9,8 @@
 + DAML https://dl.acm.org/doi/10.1145/3292500.3330906 Done
 
 ## 自己的论文
++ DAML-Improved 对DAML模型在id信息融合方式上借鉴NRPA模型的思想 Done
++ DAML-Distance 对DAML模型在id信息融合方式上借鉴NRPA模型的思想并对距离公式进行调研 ToDo
 
 ## 数据集
 + MOVIE LINES (http://www.grouplens.org/node/73)
