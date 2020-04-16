@@ -88,11 +88,11 @@ class MutualAttention(nn.Module):
     def forward(self, local_att_u, local_att_i):
 
         # Originl Attentiion func, the mem has been alloced so large
-        conv_fea_u = self.conv_u(local_att_u.permute(0,2,1)).unsqueeze(2)
-        conv_fea_i = self.conv_i(local_att_i.permute(0,2,1)).unsqueeze(3)
+        conv_fea_u = self.conv_u(local_att_u.permute(0,2,1))
+        conv_fea_i = self.conv_i(local_att_i.permute(0,2,1))
         # (batch_size,  conv_kernel_num, 1, review_length)
         # (batch_size,  conv_kernel_num, review_length, 1)
-        distance    = self.get_distance(conv_fea_u, conv_fea_i)
+        distance    = self.get_distance(conv_fea_u, conv_fea_i, True)
         A           = torch.reciprocal(distance+1)
         i_att       = F.softmax(torch.sum(A,dim=2), dim=1)
         u_att       = F.softmax(torch.sum(A,dim=1), dim=1)
@@ -113,14 +113,29 @@ class MutualAttention(nn.Module):
         # (batch_size, review_length)
         return u_att, i_att
 
-    def get_distance(self, conv_fea_u, conv_fea_i):
+    def get_distance(self, conv_fea_u_in, conv_fea_i_in, weighted=False):
         # Can be improved
+        if weighted:
+            var = torch.sqrt(torch.var(torch.cat((conv_fea_u_in, conv_fea_i_in), dim=1), dim=1, keepdim=True))
+            conv_fea_u_in /= var
+            conv_fea_i_in /= var
+        del var
+        conv_fea_u = conv_fea_u_in.unsqueeze(2)
+        conv_fea_i = conv_fea_i_in.unsqueeze(3)
         conv_sub = torch.sub(conv_fea_u, conv_fea_i)
         conv_pow = torch.pow(conv_sub, 2)
         del conv_sub
         conv_sum = torch.sum(conv_pow, dim=1)
         del conv_pow
         return torch.sqrt(conv_sum)
+
+    def get_pearson_distance(self, conv_fea_u, conv_fea_i):
+        # Can be improved
+        conv_fea_u = conv_fea_u.permute(0,2,1)
+        conv_fea_u = conv_fea_u - torch.mean(conv_fea_u)
+        conv_fea_i = conv_fea_i - torch.mean(conv_fea_i)
+        conv_sum   = (torch.bmm(conv_fea_u, conv_fea_i)) / (torch.norm(conv_fea_u)*torch.norm(conv_fea_i))
+        return  conv_sum
 
 
 class Flatten(nn.Module):
@@ -196,8 +211,8 @@ class DAML(nn.Module):
             nn.ReLU()
         )
         self.out = FactorizationMachine(conv_kernel_num * 2, fm_k)
-        self.drop_u = nn.Dropout(p=1.0)
-        self.drop_i = nn.Dropout(p=1.0)
+        self.drop_u = nn.Dropout(p=0.8)
+        self.drop_i = nn.Dropout(p=0.8)
 
     def forward(self, u_text, i_text, u_ids, i_ids):
         # (batch_size , review_size, review_length)
@@ -239,6 +254,7 @@ class DAML(nn.Module):
         # user_latent += u_ids
         # item_latent += i_ids
 
+        # concat_latent = torch.cat((user_latent, item_latent), dim=1)
         concat_latent = torch.cat((self.drop_u(user_latent), self.drop_u(item_latent)), dim=1)
         prediction = self.out(concat_latent)
         return prediction
@@ -420,14 +436,14 @@ def main(path):
             best_valid_epoch = epoch
             torch.save(
                 best_model_state_dict,
-                os.path.join(SAVE_DIR, 'ImprovedDAML.tar')
+                os.path.join(SAVE_DIR, 'DistanceImprovedDAML.tar')
             )
         print(
             'epoch: {}, train mse_loss: {:.5f}, valid mse_loss: {:.5f}'
             .format(epoch, train_loss, error)
         )
     
-    with open(os.path.join(SAVE_DIR,'training_ImprovedDAML.json'), 'w') as f:
+    with open(os.path.join(SAVE_DIR,'training_DistanceImprovedDAML.json'), 'w') as f:
         json.dump(
             {'epoch': best_valid_epoch,'valid_loss': best_valid_loss},
             f

@@ -10,7 +10,9 @@
 
 ## 自己的论文
 + DAML-Improved 对DAML模型在id信息融合方式上借鉴NRPA模型的思想 Done
-+ DAML-Distance 对DAML模型在id信息融合方式上借鉴NRPA模型的思想并对距离公式进行调研 ToDo
++ DAML-Distance 对DAML模型在id信息融合方式上借鉴NRPA模型的思想并对距离公式进行调研 Done
+  + 欧式距离（常规 + 标准化加权）
+  + 皮尔逊相关系数
 
 ## 数据集
 + MOVIE LINES (http://www.grouplens.org/node/73)
@@ -53,6 +55,34 @@ LATENT_FACTOR_NUM   = 58
 GPU_DEVICES         = 0
 ID_EMBEDDING_DIM    = 32
 ATTEN_VEC_DIM       = 16
+ATT_CONV_SIZE       = 3
+
+#ImprovedDAML
+BATCH_SIZE          = 24
+EPOCHS              = 75
+LEARNING_RATE       = 0.001
+CONV_LENGTH         = 3
+CONV_KERNEL_NUM     = 16
+FM_K                = 1 #Factorization Machine 交叉向量维度
+LATENT_FACTOR_NUM   = 32
+GPU_DEVICES         = 0
+ID_EMBEDDING_DIM    = 32
+ATTEN_VEC_DIM       = 16
+REVIEW_SIZE         = 15
+ATT_CONV_SIZE       = 3
+
+#DistanceImprovedDAML (Standardized Euclidean distance )
+BATCH_SIZE          = 24
+EPOCHS              = 75
+LEARNING_RATE       = 0.001
+CONV_LENGTH         = 3
+CONV_KERNEL_NUM     = 16
+FM_K                = 1 #Factorization Machine 交叉向量维度
+LATENT_FACTOR_NUM   = 32
+GPU_DEVICES         = 0
+ID_EMBEDDING_DIM    = 32
+ATTEN_VEC_DIM       = 16
+REVIEW_SIZE         = 15
 ATT_CONV_SIZE       = 3
 ```
   
