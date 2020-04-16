@@ -1,4 +1,4 @@
-# Recommendation-System-Graduation-Design
+# Recommendation-Improved
 推荐系统---实验+复现+创新
 ## 书籍阅读复现阶段
 + 推荐系统实践 https://item.jd.com/11007625.html
