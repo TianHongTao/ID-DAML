@@ -9,7 +9,7 @@
 + DAML https://dl.acm.org/doi/10.1145/3292500.3330906 Done
 
 ## 自己的论文
-+ DAML-Improved 对DAML模型在id信息融合方式上借鉴NRPA模型的思想 Done
++ DAML-Improved 对DAML模型在id信息融合方式上借鉴NRPA模型的思想 Done (模型见/pic/IDAML.png)
 + DAML-Distance 对DAML模型在id信息融合方式上借鉴NRPA模型的思想并对距离公式进行调研 Done
   + 欧式距离（常规 + 标准化加权）
   + 皮尔逊相关系数
