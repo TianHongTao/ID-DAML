@@ -92,7 +92,7 @@ class MutualAttention(nn.Module):
         conv_fea_i = self.conv_i(local_att_i.permute(0,2,1))
         # (batch_size,  conv_kernel_num, 1, review_length)
         # (batch_size,  conv_kernel_num, review_length, 1)
-        distance    = self.get_distance(conv_fea_u, conv_fea_i, True)
+        distance    = self.get_pearson_distance(conv_fea_u, conv_fea_i, True)
         A           = torch.reciprocal(distance+1)
         i_att       = F.softmax(torch.sum(A,dim=2), dim=1)
         u_att       = F.softmax(torch.sum(A,dim=1), dim=1)
@@ -129,11 +129,12 @@ class MutualAttention(nn.Module):
         del conv_pow
         return torch.sqrt(conv_sum)
 
-    def get_pearson_distance(self, conv_fea_u, conv_fea_i):
+    def get_pearson_distance(self, conv_fea_u, conv_fea_i, skip_means=False):
         # Can be improved
         conv_fea_u = conv_fea_u.permute(0,2,1)
-        conv_fea_u = conv_fea_u - torch.mean(conv_fea_u)
-        conv_fea_i = conv_fea_i - torch.mean(conv_fea_i)
+        if not skip_means:
+            conv_fea_u = conv_fea_u - torch.mean(conv_fea_u)
+            conv_fea_i = conv_fea_i - torch.mean(conv_fea_i)
         conv_sum   = (torch.bmm(conv_fea_u, conv_fea_i)) / (torch.norm(conv_fea_u)*torch.norm(conv_fea_i))
         return  conv_sum
 
