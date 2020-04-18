@@ -14,7 +14,7 @@
   + 欧式距离（常规 + 标准化加权）
   + 皮尔逊相关系数
 
-![](/pic/IDAML.png)
+![image](https://github.com/TianHongTao/ID-DAML/blob/master/pic/IDAML.png)
 
 ## 数据集
 + MOVIE LINES (http://www.grouplens.org/node/73)
