@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>IDAML展示</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="stylesheet" 
+        href="https://houtai.baidu.com/v2/csssdk">
+    <style>
+        html, body, .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="https://houtai.baidu.com/v2/jssdk"></script>
+    <script type="text/javascript">
+    let BASE_PATH="/Users/denhiroshi/Downloads/Recommendation-System-Graduation-Design/";
+    (function() {
+        var amis = amisRequire('amis/embed');
+        amis.embed(
+            '#root', {
+                "$schema": "https://houtai.baidu.com/v2/schemas/page.json#",
+                "type": "page",
+                "title": "IDAML展示",
+                "body": [
+                    {
+                        "type": "card",
+                        "header": {
+                            "title": "neo4j展示",
+                            "avatar": BASE_PATH+"pic/neo4j.jpg",
+                            "subTitle": "展示已导入的数据集分布情况",
+                            "avatarClassName": "pull-left"
+                        },
+                        "actions": [
+                            {
+                                "type": "button",
+                                "label": "登陆",
+                                "actionType": "url",
+                                "dialog": {
+                                    "title": "系统提示",
+                                    "body": "对你点击了"
+                                },
+                                "url": "http://localhost:7474/browser/",
+                                "size": "lg"
+                            }
+                        ],
+                        "body": [
+                            {
+                                "type": "divider"
+                            },
+                            {
+                                "type": "tpl",
+                                "tpl": "<p><span style=\"color: rgb(184, 49, 47);\"><strong>账号</strong></span>：neo4j</p><p><strong><span style=\"color: rgb(184, 49, 47);\">密码</span></strong>：neo4j_test</p>",
+                                "inline": false,
+                                "label": "登陆说明"
+                            },
+                            {
+                                "type": "divider"
+                            },
+                            {
+                                "type": "tpl",
+                                "tpl": "<p><a href=\"https://www.w3cschool.cn/neo4j/\">w3cschool中文教程</a></p>\n<p><a href=\"https://neo4j.com/docs/cypher-refcard/current/\">基础语法</a></p><p><a href=\"https://neo4j.com/docs/operations-manual/4.0/\">开发者文档4.0</a></p><p><a href=\"https://neo4j.com/docs/getting-started/current/get-started-with-neo4j/\">QuickStart</a></p>\n",
+                                "inline": false,
+                                "label": "语法参考"
+                            }
+                        ],
+                        "className": ""
+                    },
+                    {
+                        "type": "card",
+                        "header": {
+                            "title": "Attention热力图展示",
+                            "avatar": BASE_PATH+"pic/attention.png",
+                            "subTitle": "展示评论Attention热力图"
+                        },
+                        "actions": [
+                            {
+                                "$schema": "https://houtai.baidu.com/v2/schemas/action.json#",
+                                "type": "button",
+                                "label": "前往",
+                                "actionType": "url",
+                                "url": "http://www.baidu.com",
+                                "size": "lg"
+                            }
+                        ],
+                        "body": [],
+                        "actionsCount": 1
+                    }
+                ]
+            }
+        );
+    })();
+    </script>
+</body>
+</html>

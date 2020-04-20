@@ -17,7 +17,8 @@ DATA_PATH_OFFICE    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Office_Prod
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 NEO4J_IP            = "http://localhost:7474/browser/"
 NEO4J_USERNAME      = "neo4j"
-NEO4J_PASSWORDS     = "ThT1278208187!"
+NEO4J_PASSWORDS     = "neo4j_test"
+graph = Graph(NEO4J_IP, user=NEO4J_USERNAME, password=NEO4J_PASSWORDS)
 
 def main(path):
     jsonfile = path.replace('.csv','.json')
@@ -58,10 +59,6 @@ def main(path):
             id_2_Uinfos[info["reviewerID"]]["rates"][info['overall']] += 1
             id_2_Iinfos[info["asin"]]["rates"][info['overall']] += 1
 
-
-    graph = Graph(NEO4J_IP, user=NEO4J_USERNAME, password=NEO4J_PASSWORDS)
-    # 清库
-    graph.delete_all()
     tx  = graph.begin()
     ItemNode = {}
     for uid, Uinfo in id_2_Uinfos.items():
@@ -87,7 +84,9 @@ def main(path):
 
 
 if __name__ == "__main__":
-    # main(DATA_PATH_MUSIC)
+    # 清库
+    graph.delete_all()
+    main(DATA_PATH_MUSIC)
+    main(DATA_PATH_OFFICE)
+    main(DATA_PATH_MUSIC2)
     main(DATA_PATH_SPORT)
-    # main(DATA_PATH_OFFICE)
-    # main(DATA_PATH_MUSIC2)
