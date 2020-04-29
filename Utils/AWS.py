@@ -143,7 +143,7 @@ def numerize(data):
     return data
 
 if __name__ == "__main__":
-    # main(DATA_PATH_SPORT)
+    main(DATA_PATH_SPORT)
     # main(DATA_PATH_MUSIC)
     # main(DATA_PATH_OFFICE)
-    main(DATA_PATH_MUSIC2)
+    # main(DATA_PATH_MUSIC2)

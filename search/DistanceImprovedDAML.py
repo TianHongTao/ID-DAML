@@ -12,10 +12,12 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 import logging
-from FM import FactorizationMachine
 from tqdm import tqdm
 from gensim.models import Word2Vec
 from torch.utils.data.dataset import Dataset
+import sys
+sys.path.append('..')
+from search.FM import FactorizationMachine
 
 DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
@@ -34,7 +36,7 @@ ATT_CONV_SIZE       = 3
 
 class LocalAttention(nn.Module):
     # As the paper in DAML the attention feature is the conv feature
-    def __init__(self, word_vec_dim, att_conv_size):
+    def __init__(self, word_vec_dim, att_conv_size, is_gen):
         super(LocalAttention, self).__init__()
         self.att_feature_i = nn.Conv1d(
             in_channels=word_vec_dim,
@@ -51,8 +53,9 @@ class LocalAttention(nn.Module):
             padding=att_conv_size//2
         )
         self.bias = 0.1
+        self.is_gen = is_gen
 
-    def forward(self, u_emm, i_emm):
+    def forward(self, u_emm, i_emm, Attention_rates):
         u_fea = self.att_feature_u(u_emm.permute(0,2,1))
         i_fea = self.att_feature_u(i_emm.permute(0,2,1))
         # (batch_size, 1, review_length)
@@ -62,12 +65,15 @@ class LocalAttention(nn.Module):
 
         att_u = u_emm * u_fea.permute(0,2,1)
         att_i = i_emm * i_fea.permute(0,2,1)
+        if self.is_gen:
+            Attention_rates[self.__class__.__name__ + "_u_fea"] = u_fea
+            Attention_rates[self.__class__.__name__  + "_i_fea"] = i_fea
         # (batch_size, review_length, word_vec_dim)
         return att_u, att_i
 
 
 class MutualAttention(nn.Module):
-    def __init__(self, filter_size, word_vec_dim, conv_kernel_num):
+    def __init__(self, filter_size, word_vec_dim, conv_kernel_num, is_gen=False):
         super(MutualAttention, self).__init__()
         self.conv_u = nn.Conv1d(
             in_channels=word_vec_dim,
@@ -84,8 +90,9 @@ class MutualAttention(nn.Module):
             padding=filter_size//2
         )
         self.bias = 0.1
+        self.is_gen=is_gen
 
-    def forward(self, local_att_u, local_att_i):
+    def forward(self, local_att_u, local_att_i, Attention_rates):
 
         # Originl Attentiion func, the mem has been alloced so large
         conv_fea_u = self.conv_u(local_att_u.permute(0,2,1))
@@ -96,6 +103,9 @@ class MutualAttention(nn.Module):
         A           = torch.reciprocal(distance+1)
         i_att       = F.softmax(torch.sum(A,dim=2), dim=1)
         u_att       = F.softmax(torch.sum(A,dim=1), dim=1)
+        if self.is_gen:
+            Attention_rates[self.__class__.__name__ + "_u_att"] = u_att
+            Attention_rates[self.__class__.__name__  + "_i_att"] = i_att
 
         # My Attention Function  Accord to the paper <ATTENTION IS ALL YOUR NEED>, it will save the mem.
 
@@ -147,7 +157,7 @@ class Flatten(nn.Module):
 
 
 class UIEncoder(nn.Module):
-    def __init__(self, conv_kernel_num, id_matrix_len, id_embedding_dim, atten_vec_dim):
+    def __init__(self, conv_kernel_num, id_matrix_len, id_embedding_dim, atten_vec_dim, is_gen=False):
 
         # :param conv_kernel_num: 卷积核数量
         # :param id_matrix_len: id总个数
@@ -158,6 +168,7 @@ class UIEncoder(nn.Module):
         self.review_f = conv_kernel_num
         self.l1 = nn.Linear(id_embedding_dim, atten_vec_dim)
         self.A1 = nn.Parameter(torch.randn(atten_vec_dim, conv_kernel_num), requires_grad=True)
+        self.is_gen =  is_gen
 
     def forward(self, word_Att, ids):
         # now the batch_size = user_batch
@@ -170,14 +181,14 @@ class UIEncoder(nn.Module):
         q               = torch.bmm(word_Att, beta.permute(0, 2, 1)) #(batch_size, conv_kernel_num, 1)
         return q
 
-class DAML(nn.Module):
+class IDDAML(nn.Module):
     def __init__(self, filter_size, latent_factor_num, conv_kernel_num, 
                  word_vec_dim, att_conv_size, u_id_len, i_id_len, 
-                 fm_k, word_weights, review_size):
-        super(DAML, self).__init__()
+                 fm_k, word_weights, review_size, is_gen=False):
+        super(IDDAML, self).__init__()
         self.review_size = review_size
-        self.local_att = LocalAttention(word_vec_dim, att_conv_size)
-        self.mutual_att = MutualAttention(filter_size, word_vec_dim, conv_kernel_num)
+        self.local_att = LocalAttention(word_vec_dim, att_conv_size, is_gen)
+        self.mutual_att = MutualAttention(filter_size, word_vec_dim, conv_kernel_num, is_gen)
         self.user_net = UIEncoder(
             conv_kernel_num=conv_kernel_num, 
             id_matrix_len=u_id_len, 
@@ -214,6 +225,8 @@ class DAML(nn.Module):
         self.out = FactorizationMachine(conv_kernel_num * 2, fm_k)
         self.drop_u = nn.Dropout(p=0.8)
         self.drop_i = nn.Dropout(p=0.8)
+        self.is_gen =  is_gen
+        self.Attention_rates={}
 
     def forward(self, u_text, i_text, u_ids, i_ids):
         # (batch_size , review_size, review_length)
@@ -226,11 +239,11 @@ class DAML(nn.Module):
         i_text                      = self.text_embedding(i_text)
         # print(u_text.shape, i_text.shape)
         # (batch_size * review_size, review_length, word_vec_dim)
-        local_att_u, local_att_i    = self.local_att(u_text, i_text)
+        local_att_u, local_att_i    = self.local_att(u_text, i_text, self.Attention_rates)
         del u_text
         del i_text
         # print(local_att_u.shape, local_att_i.shape)
-        mutual_att_u, mutual_att_i  = self.mutual_att(local_att_u, local_att_i)
+        mutual_att_u, mutual_att_i  = self.mutual_att(local_att_u, local_att_i, self.Attention_rates)
         # print(mutual_att_u.shape, mutual_att_i.shape)
         # (batch_size * review_size, word_vec_dim, review_length)
         pools_u, pools_i            = self.pool_mean(local_att_u*mutual_att_u.unsqueeze(2), local_att_i*mutual_att_i.unsqueeze(2))
@@ -343,7 +356,7 @@ def main(path):
     r_valid = torch.FloatTensor(r_valid)
     
 
-    model = DAML(
+    model = IDDAML(
         filter_size=CONV_LENGTH, 
         latent_factor_num=LATENT_FACTOR_NUM, 
         conv_kernel_num=CONV_KERNEL_NUM, 
