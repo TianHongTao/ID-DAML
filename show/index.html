@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>IDAML展示</title>
+    <title>基于评论与评分的双重注意力的推荐算法IDAML的数据可视化</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -30,13 +30,13 @@
             '#root', {
                 "$schema": "https://houtai.baidu.com/v2/schemas/page.json#",
                 "type": "page",
-                "title": "IDAML展示",
+                "title": "基于评论与评分的双重注意力的推荐算法IDAML的数据可视化",
                 "body": [
                     {
                         "type": "card",
                         "header": {
-                            "title": "neo4j展示",
-                            "avatar": BASE_PATH+"pic/neo4j.jpg",
+                            "title": "图数据展示",
+                            "avatar": BASE_PATH+"pic/neo4j.jpeg",
                             "subTitle": "展示已导入的数据集分布情况",
                             "avatarClassName": "pull-left"
                         },
@@ -78,9 +78,9 @@
                     {
                         "type": "card",
                         "header": {
-                            "title": "Attention热力图展示",
+                            "title": "Attention权重渲染图展示",
                             "avatar": BASE_PATH+"pic/attention.png",
-                            "subTitle": "展示评论Attention热力图"
+                            "subTitle": "展示评论Attention权重渲染图，点击下方链接，从数据集中随机生成样式"
                         },
                         "actions": [
                             {
@@ -92,7 +92,14 @@
                                 "size": "lg"
                             }
                         ],
-                        "body": [],
+                        "body": [
+                            {
+                                "type": "tpl",
+                                "tpl": "<p><a href=\"http://www.baidu.com\">数字音乐数据集</a></p>\n<p><a href=\"http://www.baidu.com\">乐器数据集</a></p><p><a href=\"http://www.baidu.com\">办公用品</a></p><p><a href=\"http://www.baidu.com\">体育用品</a></p>\n",
+                                "inline": false,
+                                "label": "支持数据"
+                            }
+                        ],
                         "actionsCount": 1
                     }
                 ]

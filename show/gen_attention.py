@@ -28,7 +28,7 @@ DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Ins
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Sports_and_Outdoors_5.json"
 DATA_PATH_MUSIC3     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Music_5.json"
 MODEL_DICT          = '../test/ImprovedDAML.tar' #reviews_Musical_Instruments_5
-# MODEL_DICT          = '../test/ImprovedDAML1.tar' #reviews_Sports_and_Outdoors_5
+MODEL_DICT          = '../test/ImprovedDAML1.tar' #reviews_Sports_and_Outdoors_5
 # MODEL_DICT          = '../test/ImprovedDAML2.tar' #reviews_Digital_Music_5
 
 BATCH_SIZE          = 1
@@ -61,6 +61,7 @@ def gen_texts(texts, word_dict, max_len, review_size):
     return text_dict
 
 def main(path):
+    print(path)
     SAVE_DIR    = os.path.sep.join(path.split(os.path.sep)[:-1])
     print("SAVE_DIR: " + SAVE_DIR)
 
@@ -99,34 +100,34 @@ def main(path):
         is_gen=True
     )
     model.load_state_dict(torch.load(MODEL_DICT, map_location=lambda storage, loc: storage))
-    u_train = []
-    i_train = []
-    r_train = []
-    with open(path.replace('.json', '_rating_train.csv')) as f:
-        for line in f.readlines():
-            line = line.strip()
-            line=line.split(',')
-            u_train.append(int(line[0]))
-            i_train.append(int(line[1]))
-            r_train.append(float(line[2]))
-    test_index  = random.randint(0, len(u_train)-1)
-    uid = u_train[test_index]
-    iid = i_train[test_index]
-    rate = r_train[test_index]
-    # u_valid = []
-    # i_valid = []
-    # r_valid = []
-    # with open(path.replace('.json', '_rating_valid.csv')) as f:
+    # u_train = []
+    # i_train = []
+    # r_train = []
+    # with open(path.replace('.json', '_rating_train.csv')) as f:
     #     for line in f.readlines():
     #         line = line.strip()
     #         line=line.split(',')
-    #         u_valid.append(int(line[0]))
-    #         i_valid.append(int(line[1]))
-    #         r_valid.append(float(line[2]))
-    # test_index  = random.randint(0, len(u_valid)-1)
-    # uid = u_valid[test_index]
-    # iid = i_valid[test_index]
-    # rate = r_valid[test_index]
+    #         u_train.append(int(line[0]))
+    #         i_train.append(int(line[1]))
+    #         r_train.append(float(line[2]))
+    # test_index  = random.randint(0, len(u_train)-1)
+    # uid = u_train[test_index]
+    # iid = i_train[test_index]
+    # rate = r_train[test_index]
+    u_valid = []
+    i_valid = []
+    r_valid = []
+    with open(path.replace('.json', '_rating_valid.csv')) as f:
+        for line in f.readlines():
+            line = line.strip()
+            line=line.split(',')
+            u_valid.append(int(line[0]))
+            i_valid.append(int(line[1]))
+            r_valid.append(float(line[2]))
+    test_index  = random.randint(0, len(u_valid)-1)
+    uid = u_valid[test_index]
+    iid = i_valid[test_index]
+    rate = r_valid[test_index]
     text_u = u_texts[uid]
     text_i = i_texts[iid]
     u_text = u_text_dict[uid]
@@ -197,5 +198,5 @@ def mk_html(seq, attns):
 
 
 if __name__ == "__main__":
-    path = DATA_PATH_MUSIC3
+    path = DATA_PATH_MUSIC2
     main(path)
