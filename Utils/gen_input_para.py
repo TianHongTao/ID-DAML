@@ -14,7 +14,7 @@ DATA_PATH_MUSIC     = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Digital_Mus
 DATA_PATH_OFFICE    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Office_Products_5.json"
 DATA_PATH_MUSIC2    = "/Users/denhiroshi/Downloads/datas/AWS/reviews_Musical_Instruments_5.json"
 PADDING_WORD        = "<PAD/>"
-REVIEW_SIZE         = 50
+REVIEW_SIZE         = 20
 
 def main(path):
     user_reviews = pickle.load(open(path.replace('.json', 'user_review'), 'rb'))
