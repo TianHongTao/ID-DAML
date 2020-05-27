@@ -259,7 +259,7 @@ def main(path):
     )
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=LATENT_FACTOR_NUM
+        lr=LEARNING_RATE
     )
     loss_func = torch.nn.MSELoss()
     print("DeepCoNN epochs {epochs} batch_size {batch_size}".format(epochs=EPOCHS, batch_size=BATCH_SIZE))
