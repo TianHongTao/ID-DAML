@@ -95,10 +95,10 @@ test文件夹中的json文件
 >> train\_{model_name}\_{dataset_name}\_{reviews_length}\_{reviews_size}\_{user_num}\_{item_num}
 
 ## 环境
-+ python3
-+ pytorch
-+ gensim
-+ numpy
-+ pandas
-+ tqdm
-+ py2neo
++ python3.7
++ pytorch => torch             1.0.0 && torchvision       0.2.1   
++ gensim => gensim            3.8.1   
++ numpy => numpy             1.16.0 
++ pandas => pandas            0.25.3  
++ tqdm => tqdm              4.42.0
++ py2neo => py2neo            4.3.0 
