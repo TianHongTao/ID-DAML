@@ -23,6 +23,8 @@
 
 ## 参数(reviews_Sports_and_Outdoors_5 Best)
 
+### ⚠️DropOut概率参数本仓库全部置为了1，无参考价值，为Demo，请具体根据实际场景进行调整
+
 ```python3
 #DeepCoNN
 BATCH_SIZE          = 64
