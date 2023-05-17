@@ -207,8 +207,11 @@ class DAML(nn.Module):
         # print(user_latent.shape, item_latent.shape)
         u_ids                       = self.id_embedding_u(u_ids)
         i_ids                       = self.id_embedding_i(i_ids)
-        user_latent += u_ids
-        item_latent += i_ids
+        # 
+        #user_latent += u_ids @QinghaoSun修改见 https://github.com/TianHongTao/ID-DAML/issues/6#issuecomment-1551484181
+        user_latent = user_latent + u_ids
+        #item_latent += i_ids @QinghaoSun修改见 https://github.com/TianHongTao/ID-DAML/issues/6#issuecomment-1551484181
+        item_latent = item_latent + i_ids
 
         concat_latent = torch.cat((self.drop_u(user_latent), self.drop_u(item_latent)), dim=1)
         prediction = self.out(concat_latent)
